@@ -1,0 +1,8 @@
+{
+  "description": "Prioritize thigh muscle fit and no hand interference. Move the motor 0.5 mm inward from the previous 55 mm offset, compensate with the upper hinge, and refit the lower hinge for 1 mm whole-shank bone clearance. Requested 3 mm/2 mm shifts were reduced to avoid muscle and bone intersections. Original CAD joints and meshes retained.",
+  "motor_axis_offset_m": 0.0545,
+  "bone_clearance_m": 0.001,
+  "upper_hinge_deg": -7.4,
+  "upper_visual_gap_m": -0.0005,
+  "fitting_profile": "fitting_profile.json"
+}

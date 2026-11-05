@@ -887,6 +887,9 @@ def _collect_trajectories(
 ):
     """Collect trajectories via jax.lax.scan."""
     traj_split_points = jnp.asarray(env.th.traj.data.split_points)
+    # Optional host-side observation hook. The observer must preserve state;
+    # disabled environments emit no extra callback into the compiled rollout.
+    state_callback = getattr(env, "training_state_callback", None)
 
     def _env_step(runner_state, unused):
         train_state, env_state, last_obs, rng, lr, val_rng, curriculum_state = runner_state
@@ -905,6 +908,8 @@ def _collect_trajectories(
         obsv, reward, absorbing, done, info, env_state, transition_state, _transition_obsv = env.step_with_transition(
             env_state, action
         )
+        if state_callback is not None:
+            state_callback(transition_state)
         log_env_state = transition_state.find(LogEnvState)
         traj_state = transition_state.additional_carry.traj_state
         traj_len = traj_split_points[traj_state.traj_no + 1] - traj_split_points[traj_state.traj_no]

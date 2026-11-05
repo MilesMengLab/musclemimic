@@ -1,0 +1,50 @@
+{
+  "description": "Motor axis aligned to human knee by rotating the complete mount around the knee center. Upper hinge fitted to 5 mm bone clearance; lower hinge counter-rotates to preserve the prior shank orientation. Original URDF axes retained; preview only.",
+  "preview_flexion_deg": 0,
+  "sides": {
+    "R": {
+      "translation_m": [
+        -0.0036393842703830504,
+        -0.3949996874446813,
+        0.0450000318975554
+      ],
+      "rotation_rpy_deg": [
+        -173.81643330949865,
+        -0.00018195830086158873,
+        -9.828338773327741e-06
+      ],
+      "upper_hinge_deg": 1.2058360895682074,
+      "lower_hinge_deg": -8.25,
+      "rgba": [
+        1,
+        0.55,
+        0.15,
+        0.85
+      ],
+      "axis_correction_deg": 6.183566693168354
+    },
+    "L": {
+      "translation_m": [
+        -0.0036393842703830504,
+        -0.3949996874446813,
+        -0.045000031897555394
+      ],
+      "rotation_rpy_deg": [
+        6.183566690501387,
+        -0.00018195830086158873,
+        179.9999901716612
+      ],
+      "upper_hinge_deg": 1.2058360895682074,
+      "lower_hinge_deg": -8.25,
+      "rgba": [
+        0.2,
+        0.65,
+        1,
+        0.85
+      ],
+      "axis_correction_deg": 6.183566693168354
+    }
+  },
+  "target_clearance_mm": 5.0,
+  "clearance_tolerance_mm": 0.05
+}

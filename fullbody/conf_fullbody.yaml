@@ -8,7 +8,7 @@ defaults:
 
 wandb:
   project: "musclemimic"
-  mode: "online"  # Options: online, offline, disabled
+  mode: "disabled"  # Options: online, offline, disabled
   tags: ["fullbody"]
 
 experiment:

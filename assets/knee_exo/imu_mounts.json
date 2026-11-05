@@ -1,0 +1,9 @@
+{
+  "description": "Provisional IMU sites at exported brace COM, axes parallel to each URDF link. Replace with measured hardware sensor mounts.",
+  "sensors": [
+    {"name": "left_thigh", "body": "hinge_L_base_link", "pos_m": [-0.0090654, -0.23188, 0.015986], "rpy_deg": [0, 0, 0]},
+    {"name": "right_thigh", "body": "hinge_R_base_link", "pos_m": [0.0090654, -0.23188, 0.015986], "rpy_deg": [0, 0, 0]},
+    {"name": "left_shank", "body": "hinge_L_shank_link", "pos_m": [-0.028731, -0.11554, 0.005662], "rpy_deg": [0, 0, 0]},
+    {"name": "right_shank", "body": "hinge_R_shank_link", "pos_m": [0.028731, -0.11554, 0.005662], "rpy_deg": [0, 0, 0]}
+  ]
+}

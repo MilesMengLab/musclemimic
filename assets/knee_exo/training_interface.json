@@ -1,0 +1,15 @@
+{
+  "urdf": {
+    "R": "urdf/knee_exo_hinge_r.urdf",
+    "L": "urdf/knee_exo_hinge_l.urdf"
+  },
+  "mounting": "source_mounting.json",
+  "imu_mounts": "imu_mounts.json",
+  "dynamics": {
+    "passive_hinge_damping": 0.02,
+    "joint_armature": 0.0001,
+    "strap_weld_solref": [0.02, 1],
+    "strap_weld_solimp": [0.95, 0.99, 0.001],
+    "strap_weld_torquescale": 0.1
+  }
+}

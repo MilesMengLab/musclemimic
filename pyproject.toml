@@ -52,6 +52,7 @@ dependencies = [
     "gitpython",
     "lxml>=6.0.0",
     "tqdm",
+    "rich",
     "huggingface_hub",
 
     # Visualization & media
@@ -138,10 +139,11 @@ torch = { index = "pytorch-cpu" }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["musclemimic*", "loco_mujoco*", "bimanual*", "fullbody*"]
+include = ["musclemimic*", "loco_mujoco*", "bimanual*", "fullbody*", "hum_exo*", "knee_exo*"]
 
 [tool.setuptools.package-data]
 "loco_mujoco.smpl" = ["robot_confs/*.yaml"]
+"hum_exo" = ["configs/*.yaml"]
 
 [tool.ruff]
 line-length = 120
@@ -174,7 +176,7 @@ ignore = [
 known-first-party = ["musclemimic", "loco_mujoco"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "hum_exo/tests"]
 markers = [
     "integration: marks tests as integration tests (may require external resources)",
 ]

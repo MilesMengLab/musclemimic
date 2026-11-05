@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="knee_exo_hinge">
+  <!-- Removed redundant fixed knee_joint from CAD export; retained revolute knee_joint and all original frames. -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.0090654 -0.23188 0.015986" rpy="0 0 0" />
+      <mass value="0.28656" />
+      <inertia ixx="0.0004204" ixy="6.2955E-06" ixz="-1.0696E-05" iyy="0.00040802" iyz="2.0927E-06" izz="0.00057961" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="motor_housing_link">
+    <inertial>
+      <origin xyz="0.015785 -0.053453 -0.0042739" rpy="0 0 0" />
+      <mass value="0.06744" />
+      <inertia ixx="3.5451E-05" ixy="-3.7084E-07" ixz="4.5148E-07" iyy="3.8313E-05" iyz="-8.0124E-06" izz="6.6839E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/motor_housing_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/motor_housing_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="upper_hinge_joint" type="revolute">
+    <origin xyz="0.01255 -0.058247 -0.022356" rpy="-0.14944 -0.0092835 3.08" />
+    <parent link="base_link" />
+    <child link="motor_housing_link" />
+    <axis xyz="-0.99806 -0.062234 0" />
+    <limit lower="-0.34907" upper="0.34907" effort="0" velocity="0" />
+  </joint>
+  <link name="motor_output_link">
+    <inertial>
+      <origin xyz="4.3419E-05 0.030401 -0.0020255" rpy="0 0 0" />
+      <mass value="0.02644" />
+      <inertia ixx="1.9601E-06" ixy="-1.8976E-08" ixz="1.2601E-08" iyy="3.0726E-06" iyz="4.1719E-07" izz="4.554E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/motor_output_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.86667 0.9098 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/motor_output_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="knee_joint" type="revolute">
+    <origin xyz="0.016318 -0.060031 0.013417" rpy="-0.14973 0 -3.0793" />
+    <parent link="motor_housing_link" />
+    <child link="motor_output_link" />
+    <axis xyz="0 0.10771 0.99418" />
+    <limit lower="0" upper="1.9199" effort="20" velocity="20" />
+  </joint>
+  <link name="shank_link">
+    <inertial>
+      <origin xyz="0.028731 -0.11554 0.005662" rpy="0 0 0" />
+      <mass value="0.17064" />
+      <inertia ixx="0.00032495" ixy="1.7018E-05" ixz="-4.2914E-05" iyy="0.00013146" iyz="-1.7562E-05" izz="0.00038154" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/shank_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://knee_exo_hinge/meshes/shank_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="lower_hinge_joint" type="revolute">
+    <origin xyz="0.0165 0.06218 -0.012772" rpy="-0.14944 -0.0092835 3.08" />
+    <parent link="motor_output_link" />
+    <child link="shank_link" />
+    <axis xyz="-0.99806 -0.062234 0" />
+    <limit lower="-0.34907" upper="0.34907" effort="0" velocity="0" />
+  </joint>
+</robot>

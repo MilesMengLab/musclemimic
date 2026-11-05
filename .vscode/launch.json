@@ -1,0 +1,108 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "训练 | 膝关节 | GPU | 128 环境 | 渲染",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.train",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": [
+                "device=knee_exo",
+                "experiment.env_params.num_envs=128",
+                "experiment.total_timesteps=30000000"
+            ]
+        },
+        {
+            "name": "训练 | 膝关节 | GPU | 128 环境 | 无窗口",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.train",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": [
+                "device=knee_exo",
+                "experiment.env_params.num_envs=128",
+                "experiment.total_timesteps=30000000",
+                "--headless"
+            ]
+        },
+        {
+            "name": "推理 | 膝关节 | 播放 120 秒",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.play",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": [
+                "--checkpoint", "${input:checkpoint}",
+                "--seconds", "120",
+                "--seed", "0"
+            ]
+        },
+        {
+            "name": "推理 | 膝关节 | 无窗口评估 120 秒",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.play",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": [
+                "--checkpoint", "${input:checkpoint}",
+                "--seconds", "120",
+                "--seed", "0",
+                "--no-viewer"
+            ]
+        },
+        {
+            "name": "预览 | 膝关节 | 安装与轴线",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.preview",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": ["--device", "knee_exo"]
+        },
+        {
+            "name": "调节 | 膝关节 | 安装配合网页",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "hum_exo.fit",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": false,
+            "env": { "PYTHONUNBUFFERED": "1" },
+            "args": ["--device", "knee_exo"]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "checkpoint",
+            "type": "promptString",
+            "description": "输入完整 checkpoint_编号 目录路径，支持相对项目根目录的路径或绝对路径"
+        }
+    ]
+}

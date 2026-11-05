@@ -309,6 +309,8 @@ def build_logging_callback(env, config, agent_conf, use_wandb, hooks: Experiment
 
         if use_wandb:
             _wandb.log(log_dict, step=current_timestep)
+        else:
+            logger.info(log_dict)
 
         # Trigger validation video recording.
         if (

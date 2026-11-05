@@ -5,7 +5,7 @@ defaults:
 
 wandb:
   project: "musclemimic"
-  mode: "online"
+  mode: "disabled"
   tags: ["bimanual"]
 
 experiment:

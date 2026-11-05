@@ -1,0 +1,282 @@
+# @package _global_
+# Baseline: fullbody demo at 47b653d; explicit snapshot for isolated integration.
+device: knee_exo
+wandb:
+  project: ${project_name:}
+  mode: disabled
+  tags:
+  - fullbody
+  - demo
+  - gmr
+experiment:
+  render:
+    enabled: false
+    num_envs: 0
+    fps: 10
+    spacing_m: 3.0
+  task_factory:
+    name: HumanExoImitationFactory
+    params:
+      amass_dataset_conf:
+        dataset_group: null
+        trajectory_cache_type: sparse
+        retargeting_method: gmr
+        gmr_config:
+          src_human: smplh
+          target_fps: 30
+          solver: daqp
+          damping: 0.5
+          offset_to_ground: false
+          use_velocity_limit: false
+          use_fitted_shape: true
+          shape_fitting_iterations: 500
+        rel_dataset_path:
+        - KIT/314/walking_medium09_poses
+        - KIT/348/turn_right03_poses
+        - KIT/4/WalkInCounterClockwiseCircle04_poses
+  env_params:
+    env_name: MjxMyoFullBodyHumanExo
+    device_id: ${device}
+    headless: true
+    horizon: 30000
+    disable_fingers: true
+    mjx_backend: warp
+    num_envs: 32
+    enable_muscle_length_observations: true
+    enable_muscle_velocity_observations: true
+    enable_muscle_force_observations: true
+    enable_muscle_excitation_observations: true
+    enable_muscle_activation_observations: true
+    enable_touch_sensor_observations: true
+    init_state_type: TrajInitialStateHandler
+    goal_type: GoalTrajMimic
+    goal_params:
+      n_step_lookahead: 5
+      n_step_stride: 20
+      upper_body_xml_name: torso
+      enable_motion_phase: true
+      use_concise_lookahead: true
+      sites_for_mimic:
+      - pelvis_mimic
+      - upper_body_mimic
+      - head_mimic
+      - left_shoulder_mimic
+      - left_elbow_mimic
+      - left_hand_mimic
+      - right_shoulder_mimic
+      - right_elbow_mimic
+      - right_hand_mimic
+      - left_hip_mimic
+      - left_knee_mimic
+      - left_ankle_mimic
+      - left_toes_mimic
+      - right_hip_mimic
+      - right_knee_mimic
+      - right_ankle_mimic
+      - right_toes_mimic
+    control_type: ${control_config.torque_control.control_type}
+    control_params: ${control_config.torque_control.control_params}
+    reward_type: HumanExoReward
+    reward_params:
+      qpos_w_sum: 0.1
+      qvel_w_sum: 0.1
+      root_pos_w_sum: 0.1
+      root_vel_w_sum: 0.1
+      rpos_w_sum: 0.6
+      rquat_w_sum: 0.01
+      rvel_w_sum: 0.1
+      action_rate_coeff: 0.0
+      activation_energy_coeff: 0.0
+      use_mean_exp_reward: false
+      sites_for_mimic:
+      - pelvis_mimic
+      - upper_body_mimic
+      - head_mimic
+      - left_shoulder_mimic
+      - left_elbow_mimic
+      - left_hand_mimic
+      - right_shoulder_mimic
+      - right_elbow_mimic
+      - right_hand_mimic
+      - left_hip_mimic
+      - left_knee_mimic
+      - left_ankle_mimic
+      - left_toes_mimic
+      - right_hip_mimic
+      - right_knee_mimic
+      - right_ankle_mimic
+      - right_toes_mimic
+      muscle_effort_weight: 0.05
+      device_effort_weight: 0.005
+    terminal_state_type: MeanRelativeSiteDeviationWithRootTerminalStateHandler
+    terminal_state_params:
+      mean_site_deviation_threshold: 1.0
+      root_deviation_threshold: 1.0
+      root_orientation_threshold: 1.0
+      enable_site_check: true
+    nconmax: 128
+    njmax: 4096
+  algorithm: PPOJax
+  actor_hidden_layers:
+  - 256
+  - 256
+  critic_hidden_layers:
+  - 256
+  - 256
+  activation: silu
+  lr: 0.0001
+  num_envs: ${experiment.env_params.num_envs}
+  total_timesteps: 30000000
+  total_timesteps_is_absolute: true
+  max_grad_norm: 1.0
+  anneal_lr: true
+  lr_schedule_type: linear
+  warmup_steps: null
+  min_lr_ratio: 0.1
+  weight_decay: 0
+  normalize_env: true
+  debug:
+    enabled: false
+    profile_traj_batch: false
+    profile_val_batch: false
+    track_nacon: false
+  optimizer_type: adamw
+  muon_config:
+    beta: 0.95
+    nesterov: true
+    ns_steps: 5
+    adaptive: false
+  ppo_config:
+    num_steps: 64
+    update_epochs: 1
+    num_minibatches: 4
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_eps: 0.2
+    clip_eps_vf: 0.2
+    init_std: 0.3
+    learnable_std: true
+    ent_coef: 0.0
+    vf_coef: 0.5
+  use_layernorm: false
+  layernorm_eps: 1.0e-05
+  use_moe: false
+  moe_config:
+    num_experts: 16
+    moe_at_layers:
+    - 3
+    apply_moe_to: both
+    apply_moe_to_output: false
+    expert_hidden_ratio: 0.5
+    temperature: 0.5
+    load_balance_loss_weight: 0.01
+    gate_init_std: 0.01
+  n_seeds: 1
+  seeds: null
+  vmap_across_seeds: false
+  save_checkpoints: true
+  max_checkpoints_to_keep: 10
+  checkpoints_on_validation: true
+  resume_from: null
+  async_checkpointing: false
+  reset_logging_timestep: false
+  reset_lr_schedule_on_resume: false
+  auto_resume: false
+  run_id: null
+  checkpoint_root: null
+  adaptive_termination:
+    enabled: false
+    init_threshold: 0.5
+    low_band: 0.1
+    high_band: 0.2
+    adjust_factor: 0.95
+    consecutive_k: 5
+    min_threshold: 0.1
+    ema_alpha: 0.1
+  reward_curriculum:
+    enabled: false
+    qvel_w_sum_init: 0.1
+    root_vel_w_sum_init: 0.1
+    qvel_w_sum_max: 0.4
+    root_vel_w_sum_max: 0.4
+    eta: 0.02
+    ema_alpha: 0.2
+    term_rate_threshold: 0.08
+    consecutive_k: 5
+  adaptive_sampling:
+    enabled: false
+    beta: 0.2
+    alpha: 1.0
+    floor_mix: 0.1
+    eps_div: 1.0e-06
+    eps_pow: 1.0e-06
+    ema_done_init: 10.0
+    ema_early_init: 5.0
+  validation:
+    active: true
+    deterministic: false
+    num_steps: 100
+    num_envs: 4
+    num: 20
+    video_length: 200
+    video_frequency: 20
+    amass_dataset_conf:
+      dataset_group: null
+      trajectory_cache_type: sparse
+      retargeting_method: gmr
+      gmr_config:
+        src_human: smplh
+        target_fps: 30
+        solver: daqp
+        damping: 0.5
+        offset_to_ground: false
+        use_velocity_limit: false
+        use_fitted_shape: true
+        shape_fitting_iterations: 500
+      rel_dataset_path:
+      - KIT/314/walking_medium09_poses
+      - KIT/348/turn_right03_poses
+      - KIT/4/WalkInCounterClockwiseCircle04_poses
+    terminal_state_type: MeanRelativeSiteDeviationTerminalStateHandler
+    terminal_state_params:
+      mean_site_deviation_threshold: 0.5
+      enable_site_check: true
+    quantities:
+    - JointPosition
+    - JointVelocity
+    - RelSitePosition
+    - RelSiteVelocity
+    - RelSiteOrientation
+    measures:
+    - EuclideanDistance
+    rel_site_names:
+    - pelvis_mimic
+    - upper_body_mimic
+    - head_mimic
+    - left_shoulder_mimic
+    - left_elbow_mimic
+    - left_hand_mimic
+    - right_shoulder_mimic
+    - right_elbow_mimic
+    - right_hand_mimic
+    - left_hip_mimic
+    - left_knee_mimic
+    - left_ankle_mimic
+    - left_toes_mimic
+    - right_hip_mimic
+    - right_knee_mimic
+    - right_ankle_mimic
+    - right_toes_mimic
+  exo_hidden_layers:
+  - 64
+  - 64
+  use_residual: false
+  len_obs_history: 1
+  checkpoint_dir: checkpoints
+control_config:
+  torque_control:
+    control_type: DefaultControl
+    control_params: {}
+hydra:
+  run:
+    dir: ${project_root:}/runs/${device}/${now:%Y-%m-%d}/${now:%H-%M-%S}

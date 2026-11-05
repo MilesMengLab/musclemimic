@@ -43,6 +43,18 @@ musclemimic/models/tests/output/
 # External references
 references/
 
+# Machine-local network configuration
+.env.proxy
+
 # Analysis outputs
 scripts/bimanual_diverse_motions*
 scripts/test_bimanual_diverse*
+
+# Human/exoskeleton generated models and experiment output
+/generated/
+/runs/
+
+# Share the launch configurations while retaining local editor settings.
+!/.vscode/
+/.vscode/*
+!/.vscode/launch.json

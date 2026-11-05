@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "adapter": "hum_exo.devices.knee_exo.adapter:KneeExoAdapter",
+  "human_model": "MyoFullBody",
+  "actuators": [
+    "Exo_R",
+    "Exo_L"
+  ],
+  "joints": [
+    "exo_upper_hinge_r",
+    "exo_knee_r",
+    "exo_lower_hinge_r",
+    "exo_upper_hinge_l",
+    "exo_knee_l",
+    "exo_lower_hinge_l"
+  ],
+  "sensors": [
+    {
+      "name": "imu_left_thigh_acc",
+      "channels": [
+        "left_thigh.acc_x",
+        "left_thigh.acc_y",
+        "left_thigh.acc_z"
+      ],
+      "units": [
+        "m/s^2",
+        "m/s^2",
+        "m/s^2"
+      ]
+    },
+    {
+      "name": "imu_left_thigh_gyro",
+      "channels": [
+        "left_thigh.gyro_x",
+        "left_thigh.gyro_y",
+        "left_thigh.gyro_z"
+      ],
+      "units": [
+        "rad/s",
+        "rad/s",
+        "rad/s"
+      ]
+    },
+    {
+      "name": "imu_right_thigh_acc",
+      "channels": [
+        "right_thigh.acc_x",
+        "right_thigh.acc_y",
+        "right_thigh.acc_z"
+      ],
+      "units": [
+        "m/s^2",
+        "m/s^2",
+        "m/s^2"
+      ]
+    },
+    {
+      "name": "imu_right_thigh_gyro",
+      "channels": [
+        "right_thigh.gyro_x",
+        "right_thigh.gyro_y",
+        "right_thigh.gyro_z"
+      ],
+      "units": [
+        "rad/s",
+        "rad/s",
+        "rad/s"
+      ]
+    },
+    {
+      "name": "imu_left_shank_acc",
+      "channels": [
+        "left_shank.acc_x",
+        "left_shank.acc_y",
+        "left_shank.acc_z"
+      ],
+      "units": [
+        "m/s^2",
+        "m/s^2",
+        "m/s^2"
+      ]
+    },
+    {
+      "name": "imu_left_shank_gyro",
+      "channels": [
+        "left_shank.gyro_x",
+        "left_shank.gyro_y",
+        "left_shank.gyro_z"
+      ],
+      "units": [
+        "rad/s",
+        "rad/s",
+        "rad/s"
+      ]
+    },
+    {
+      "name": "imu_right_shank_acc",
+      "channels": [
+        "right_shank.acc_x",
+        "right_shank.acc_y",
+        "right_shank.acc_z"
+      ],
+      "units": [
+        "m/s^2",
+        "m/s^2",
+        "m/s^2"
+      ]
+    },
+    {
+      "name": "imu_right_shank_gyro",
+      "channels": [
+        "right_shank.gyro_x",
+        "right_shank.gyro_y",
+        "right_shank.gyro_z"
+      ],
+      "units": [
+        "rad/s",
+        "rad/s",
+        "rad/s"
+      ]
+    },
+    {
+      "name": "right_knee_encoder_pos",
+      "channels": [
+        "right_knee.angle"
+      ],
+      "units": [
+        "rad"
+      ]
+    },
+    {
+      "name": "right_knee_encoder_vel",
+      "channels": [
+        "right_knee.angular_velocity"
+      ],
+      "units": [
+        "rad/s"
+      ]
+    }
+  ]
+}

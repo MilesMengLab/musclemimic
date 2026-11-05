@@ -1,3 +1,7 @@
+## 本地人机协同扩展
+
+公共框架为 [hum_exo](hum_exo/README.md)，设备资产按 `assets/<device_id>/` 组织，当前为 [knee_exo](assets/knee_exo/README.md)。在当前仓库根目录执行 `./scripts/hum_exo.sh preview --device knee_exo` 预览，或 `./scripts/hum_exo.sh train device=knee_exo` 训练。启动脚本和资源解析根据实际根目录定位，支持修改外层文件夹名称。设备接入接口见 [DEVICE_API.md](hum_exo/DEVICE_API.md)。
+
 <p align="center">
   <img src="./assets/banner.jpg" alt="Banner" width="100%">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-76B900.svg" alt="License"></a>
@@ -86,8 +90,12 @@ uv run mjpython fullbody/eval.py \
   --mujoco_viewer
 ```
 
-Start a short demo training run. These configs log to Weights & Biases with
-`wandb.mode=online` by default:
+Start a short demo training run. These configs use `wandb.mode=disabled` by
+default. To enable Weights & Biases, append `wandb.mode=online` to a command.
+
+With W&B disabled, training metrics go to the terminal and Hydra's experiment
+log. The first metrics appear after compilation and the first update and its
+scheduled validation.
 
 ```bash
 uv run bimanual/experiment.py --config-name=conf_bimanual_demo
