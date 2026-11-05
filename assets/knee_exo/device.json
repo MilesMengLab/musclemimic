@@ -137,5 +137,9 @@
         "rad/s"
       ]
     }
+  ],
+  "visual_body_roots": [
+    "hinge_R_base_link",
+    "hinge_L_base_link"
   ]
 }

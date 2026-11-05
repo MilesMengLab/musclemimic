@@ -21,7 +21,7 @@ from hum_exo.devices.knee_exo.mounting import nearest_bone
 from hum_exo.fitting import FitParameter
 from hum_exo.geometry import capsule_surface_gaps, mesh_geometry, rendered_tendon_capsules
 from hum_exo.paths import resolve_model
-from hum_exo.preview import alignment
+from hum_exo.visualization import alignment
 
 POINT_QUERY_BATCH = 256
 CONTACT_BANDS = ((0.50, 0.78), (0.20, 0.43), (0.73, 1.0), (0.0, 0.27))

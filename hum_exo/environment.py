@@ -119,14 +119,6 @@ class MjxMyoFullBodyHumanExo(MyoFullBodyHumanExo, MjxMyoFullBody):
     # solver defaults (4/8 iterations and EULERDAMP disabled) and user overrides.
 
 
-class MyoFullBodyKneeExo(MyoFullBodyHumanExo):
-    """Historical knee checkpoint environment name."""
-
-
-class MjxMyoFullBodyKneeExo(MjxMyoFullBodyHumanExo):
-    """Historical knee GPU checkpoint environment name."""
-
-
 class HumanExoImitationFactory(ImitationFactory):
     """Reuse human reference caches while composing the additional device state."""
 
@@ -163,14 +155,9 @@ class HumanExoImitationFactory(ImitationFactory):
         )
 
 
-class KneeExoImitationFactory(HumanExoImitationFactory):
-    """Historical factory name for existing knee checkpoints."""
-
-
 def register() -> None:
-    """Register common environments and historical checkpoint aliases."""
-    for cls in (MyoFullBodyHumanExo, MjxMyoFullBodyHumanExo, MyoFullBodyKneeExo, MjxMyoFullBodyKneeExo):
+    """Register device-independent human environments and imitation factory."""
+    for cls in (MyoFullBodyHumanExo, MjxMyoFullBodyHumanExo):
         cls.register()
-    for cls in (HumanExoImitationFactory, KneeExoImitationFactory):
-        if cls.get_name() not in cls.registered:
-            cls.register()
+    if HumanExoImitationFactory.get_name() not in HumanExoImitationFactory.registered:
+        HumanExoImitationFactory.register()

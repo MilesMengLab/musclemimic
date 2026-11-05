@@ -1,93 +1,51 @@
 # hum_exo 人机协同训练框架
 
-公共框架位于 `hum_exo/`，设备资产位于 `assets/<device_id>/`，设备专用运动学和参考适配位于 `hum_exo/devices/<device_id>/`。当前膝关节设备为 `knee_exo`。训练复用 MuscleMimic 的 JAX PPO、MyoFullBody 和 MuJoCo Warp。
+本框架在 MuscleMimic 的 MyoFullBody、JAX PPO 和 MuJoCo Warp 上提供人体与辅助设备的联合训练。人体 actor 使用人体和参考动作观测，设备 actor 使用清单声明的传感器，共同 critic 使用完整观测。奖励同时考虑动作跟踪、肌肉用力和设备输出。
 
-公共模块负责双 actor 与共同 critic、设备观测隔离、奖励、训练日志、checkpoint、播放与策略导出。传感器维度和电机数量从 `device.json` 读取。后续设备通过清单和适配器接入，契约见 [DEVICE_API.md](DEVICE_API.md)。公共接口采用 v1，设备机构变化留在设备适配器中。
+当前已提供双侧膝关节设备。髋、踝设备通过相同契约接入，需要各自的资产、安装和参考初始化实现。当前人体宿主为 MyoFullBody。
 
-## 运行入口
-
-以下命令在仓库根目录执行。脚本根据自身位置找到项目，不依赖根目录名称，也可从其他目录通过脚本完整路径启动。
-
-```bash
-./scripts/hum_exo.sh preview --device knee_exo
-./scripts/hum_exo.sh fit --device knee_exo
-./scripts/hum_exo.sh train device=knee_exo
-./scripts/hum_exo.sh train device=knee_exo --headless
-./scripts/hum_exo.sh play --checkpoint runs/knee_exo/日期/时间/checkpoints/checkpoint_编号 --seconds 60
-./scripts/hum_exo.sh export runs/knee_exo/日期/时间/checkpoints/checkpoint_编号
-```
-
-等价模块入口为 `python -m hum_exo.preview`、`python -m hum_exo.fit`、`python -m hum_exo.train`、`python -m hum_exo.play` 和 `python -m hum_exo.export`。可以继续通过 `./scripts/with_proxy.sh` 包裹命令以应用本地网络设置。
-
-```bash
-./scripts/with_proxy.sh ./scripts/hum_exo.sh train device=knee_exo
-```
-
-预览显示当前中立位的设备和人体转轴。`--render` 保存三个视角截图与轴线报告。参考动作展示使用 `./scripts/hum_exo.sh play --preview --device knee_exo --seconds 30`，它直接设置拟合参考姿态，不代表策略控制的动力学结果。
-
-安装调节命令 `./scripts/hum_exo.sh fit --device knee_exo` 打开本地浏览器页面，默认地址为 `http://127.0.0.1:8080`。可用 `--port 8081` 更换端口，`--no-browser` 关闭自动打开浏览器。工具使用 CPU MuJoCo 计算静态装配运动学，浏览器显示三维几何，不加载 JAX 或策略，不改变 GPU 训练配置。操作方法见 [FITTING.md](FITTING.md)。
-
-默认训练使用 32 个 GPU 环境、每轮 64 个控制步、3000 万步预算及已下载的三段示例动作。终端采用与 MyoAssist/SB3 相同的无时间戳分组表格、3 位有效数字和 Rich 动态进度条，首次更新包含 JAX/Warp 编译。进度条显示百分比、累计步数、已用时间、剩余时间和 it/s，按每轮 GPU rollout 更新；终端持续刷新，重定向到文件时输出最终进度。表格存入 `training_console.log`，原始指标和逐轮耗时存入 `training_metrics.jsonl`。W&B 默认关闭。
-
-训练命令不带 `--headless` 时打开独立 MuJoCo 窗口，将全部环境按网格显示；带 `--headless` 时不打开窗口。窗口读取训练中各环境的真实位置快照，显示偏移不反馈到仿真。关闭窗口后训练继续。首次编译期间显示等待提示。渲染会增加 CPU/GPU 负载，显示默认最多每秒 10 帧，不强制训练按真实时间运行。可用 `experiment.render.num_envs=1` 只显示一个环境，或 `experiment.render.fps=5` 调低刷新率。程序化 Hydra 配置默认仍不启用显示，CLI 负责转换该开关。
-
-准备阶段只显示“初始化 / 编译中”，首轮真实训练指标返回后才出现进度条。网络参数消息和零步数消息不会触发进度条。续训进度从保存步数继续；表格和 JSONL 的累计时间仍包含初始化及首次编译，进度条计时从首次显示开始。
-
-GPU 环境通过原版 `MjxMyoFullBody` 初始化，默认求解器 `iterations=4`、`ls_iterations=8`，并关闭 `EULERDAMP`，与官方设置一致。实际设置写入实验配置，后续播放使用同一设置。可通过 `experiment.env_params.model_option_conf` 显式覆盖；减少迭代上限会改变数值精度，绑缚负载和稳定性仍需检查。
-
-```bash
-./scripts/hum_exo.sh train device=knee_exo experiment.env_params.num_envs=128
-./scripts/hum_exo.sh train device=knee_exo experiment.env_params.num_envs=128 --headless
-```
-
-本机短基准中，32 环境官方求解器约 1033 步/秒，128 环境约 3049 步/秒，均排除了前四次编译和预热更新。长训练吞吐与收敛效果需继续观察，默认环境数仍为 32。
-
-播放默认使用确定性策略和 CPU MuJoCo。`--no-viewer` 关闭窗口，`--seed` 固定初态，`--motor-off` 施加零设备命令，`--output` 指定评估 JSON。导出权重可通过 `hum_exo.controller.DeviceController` 用 NumPy 推理，输入维度和输出顺序来自导出的 `input_schema.json`。
-
-```python
-from hum_exo.controller import DeviceController
-
-controller = DeviceController("generated/knee_exo/export/device_actor.npz")
-commands = controller(raw_sensors)
-```
-
-续训需要匹配设备 ID、网络尺寸和 rollout 配置，默认配置训练的实验可使用：
-
-```bash
-./scripts/hum_exo.sh train device=knee_exo \
-  experiment.resume_from=runs/knee_exo/日期/时间/checkpoints/checkpoint_编号 \
-  experiment.total_timesteps=60000000
-```
-
-总预算包含已经完成的步数。续训复用原模型快照，写入新运行目录。修改传感器顺序、单位或电机顺序后，不允许静默加载不匹配的 checkpoint。
-
-## 目录和路径
+## 目录职责
 
 ```text
-hum_exo/                     公共训练、观测、策略、播放和导出
-  configs/train.yaml         公共配置
-  device.py                  设备契约与自动加载
-  paths.py                   根目录发现、模型和 checkpoint 路径
-  devices/knee_exo/          膝关节专用机构、安装和参考适配
-assets/
-  knee_exo/                  URDF、STL、传感器、安装参数和设备清单
-runs/<device_id>/            新训练结果
-generated/<device_id>/      构建模型、拟合缓存、截图和部署导出
-knee_exo/                    旧命令兼容入口及历史输出
+hum_exo/
+  train.py                  GPU 训练与运行快照
+  environment.py            人体环境、设备观测和参考动作接入
+  policy.py                 独立人体/设备 actor 与共同 critic
+  reward.py                 跟踪、肌肉用力和设备代价
+  evaluation.py             共享策略评估和参考动作回放
+  export.py, controller.py  设备策略导出与 NumPy 部署
+  checkpoint.py, paths.py   模型读取和可移动路径
+  visualization.py          关节轴线测量与绘制
+  fitting.py                设备安装调节会话契约
+  devices/<device_id>/      设备专用机构、安装、传感器和参考拟合
+scripts/hum_exo/             Play、预览、安装调节、导出工具
+assets/<device_id>/          URDF、网格、设备清单和安装配置
+outputs/日期/时间/           模型快照、checkpoint、训练配置和日志
+generated/<device_id>/     可重建的模型、拟合缓存、预览和评估输出
 ```
 
-根目录由 `pyproject.toml` 的位置确定，显示名称由当前根目录名读取。新 XML 的网格和纹理使用相对路径；配置使用 `project://`，可移动的实验配置快照使用 `run://`。checkpoint 根据实际所在的实验目录寻找模型，旧版绝对资产路径会在加载时映射到当前设备资产，原实验 XML 保持不变。
+`hum_exo` 的计算模块不依赖 `scripts`。工具调用公共接口，设备适配器实现机构差异；新增设备不复制 PPO、日志、评估或网页界面。
 
-可以修改仓库文件夹名称，Python 包名 `hum_exo`、`musclemimic`、`loco_mujoco` 和模块目录需要保持。它们是导入接口，不随外层目录重命名。`.venv` 内工具脚本可能含环境创建时的绝对 shebang；推荐使用上面的启动脚本，它直接调用当前目录的 `.venv/bin/python`。换机器或 Python 环境失效时重新执行 `uv sync --extra cuda`。外部数据集、用户指定的绝对路径及本地代理端口仍由各自配置负责。
+## 运行与接入
 
-原来的 `python -m knee_exo.preview/train/play/export` 命令保留转发入口。旧 `knee_exo/generated/` 和训练记录未移动。新输出统一使用根目录 `generated/`、`runs/`，无需在设备资产目录保存运行产物。
+在仓库根目录使用 `./scripts/hum_exo.sh`。完整训练、播放、续训和导出命令见 [命令手册](../readme1.md)，工具模块入口见 [scripts/hum_exo](../scripts/hum_exo/README.md)。VS Code 配置位于 [.vscode/launch.json](../.vscode/launch.json)。
 
-## 当前膝关节状态与限制
+新增设备的资产清单、接口和接入步骤见 [DEVICE_API.md](DEVICE_API.md)。安装调节方法见 [FITTING.md](FITTING.md)，当前膝关节资产见 [assets/knee_exo](../assets/knee_exo/README.md)。
 
-设备使用四个 IMU 加右膝编码器共 26 维输入，输出右、左两个电机。按用户选定的优先级，大腿保持轻微贴合并避开手部。当前电机轴向偏置为 54.5 mm，比此前 55 mm 再内移 0.5 mm；电机旁小腿绑缚上端净内移约 0.702 mm。上、下合页分别为 -7.4 度和 +0.123989 度，小腿骨骼最小间隙约 1 mm。大腿肌肉显示重叠约 0.438 mm，手部不相交。原先 3 mm/2 mm 目标因几何冲突减小，详情见设备安装说明。膝轴继续共轴，URDF 和网格保持原定义。
+## 训练和保存
 
-上述安装和避让结果针对中立位，动态动作下的接触需要另行检查。当前实现是可运行的研究原型。数值 weld 表示理想化绑缚，三自由度设备与人体耦合膝的运动拟合仍有约 17 mm 的峰值位置残差。短训练验证执行流程，稳定步态、动态绑缚负载、助力收益及真实硬件控制需要独立验证。肌肉平方激活是用力代理指标，不等于代谢消耗。
+默认使用 32 个 GPU 环境、每轮 64 步和 3000 万步预算；launch 使用 128 个环境。训练轮数向上取整，至少完成预算。例如 2048 环境对应 229 轮、30,015,488 步，结尾显示真实步数、100% 和 `learning done!`。
 
-安装细节见 [设备说明](../assets/knee_exo/README.md)，重构验证见 [REFACTOR_VALIDATION.md](REFACTOR_VALIDATION.md)。
+准备阶段只显示初始化提示，首次真实更新后出现 Rich 进度条和 PPO 表格。`training_console.log` 保存表格，`training_metrics.jsonl` 保存原始指标及逐轮耗时。Orbax 内部 INFO 留在实验日志，终端保留简要保存通知、警告和错误。W&B 默认关闭。
 
-求解器修复、动态终端显示和最新贴合的实测记录见 [SOLVER_CONSOLE_VALIDATION.md](SOLVER_CONSOLE_VALIDATION.md)。
+带 `--headless` 时关闭训练窗口，训练继续使用 GPU。窗口从独立进程读取真实状态，网格显示偏移不参与仿真。GPU 求解器沿用官方默认设置，并写入快照，播放和续训复用这些设置。
+
+每次训练写入新的 `outputs/日期/时间/`，checkpoint 位于 `checkpoints/运行标识/checkpoint_编号/`。同时保存完整人体设备模型、`device.json`、`interface.json`、配置和参考拟合报告。Play 路径留空时，按保存时间选择 `outputs/` 下同设备的最新完整 checkpoint。
+
+## 路径与有效范围
+
+根目录通过 `pyproject.toml` 定位，可修改外层文件夹名称。仓库内路径支持 `project://`，运行快照支持 `run://`；MuJoCo 网格和纹理使用相对路径。Python 包名保持不变。移动环境后如 `.venv` 失效，重新执行 `uv sync --extra cuda`。
+
+设备输入顺序、单位、电机顺序和自由度属于保存契约；不匹配时拒绝加载。续训使用保存的物理模型，避免安装调整改变原实验。更换传感器布局后需要重新训练或显式迁移。
+
+当前实现使用理想电机和数值绑缚约束。安装轴线对齐、参考轨迹拟合和短训练通过，只能证明相应接口和执行流程；步态稳定性、动态绑缚负载、助力收益及硬件安全需要独立评估。肌肉平方激活是用力代理量。

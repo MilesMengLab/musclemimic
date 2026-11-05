@@ -49,3 +49,33 @@ def test_interrupted_preparation_leaves_no_zero_step_progress(tmp_path):
     assert "初始化 / 编译中" in stream.getvalue()
     assert "0/30,000,000" not in stream.getvalue()
     assert "━" not in stream.getvalue()
+
+
+def test_final_progress_keeps_actual_rounded_up_steps(tmp_path):
+    config = OmegaConf.create(
+        {
+            "experiment": {
+                "num_envs": 2048,
+                "num_steps": 64,
+                "total_timesteps": 30_000_000,
+                "clip_eps": 0.2,
+                "clip_eps_vf": 0.2,
+            }
+        }
+    )
+    stream = StringIO()
+    logger = TrainingConsole(config, tmp_path, console=Console(file=stream, width=180, color_system=None))
+    try:
+        logger({"max_timestep": 29_884_416, "jax_raw_timestep": 29_884_416})
+        task = logger.progress.tasks[0]
+        assert logger.progress.columns[0].render(task).plain.strip() == "99%"
+        assert not task.finished
+        logger({"max_timestep": 30_015_488, "jax_raw_timestep": 30_015_488})
+        assert task.finished and task.time_remaining == 0
+        assert task.completed == 30_015_488 and task.total == 30_000_000
+    finally:
+        logger.close()
+    assert "100%" in stream.getvalue()
+    assert "30,015,488/30,000,000" in stream.getvalue()
+    rows = [json.loads(line) for line in logger.output.read_text().splitlines()]
+    assert rows[-1]["max_timestep"] == 30_015_488

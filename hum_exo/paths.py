@@ -42,18 +42,12 @@ def resolve_path(value: str | Path, run_dir: Path | None = None) -> Path:
     path = Path(value).expanduser()
     if path.exists():
         return path.resolve()
-    # Asset-only relocation from the former monolithic knee integration.
-    normalized = path.as_posix()
-    if "knee_exo/assets/" in normalized:
-        candidate = project_root() / "assets/knee_exo" / normalized.split("knee_exo/assets/", 1)[1]
-        if candidate.exists():
-            return candidate
     if not path.is_absolute():
         return project_root() / path
     # Old experiments embedded the former checkout name. Only accept a known
     # project suffix that actually exists, rather than guessing by basename.
     for index, part in enumerate(path.parts):
-        if part in {"assets", "hum_exo", "knee_exo", "runs", "generated", ".venv", "fullbody", "bimanual"}:
+        if part in {"assets", "hum_exo", "outputs", "generated", ".venv", "fullbody", "bimanual"}:
             candidate = project_root().joinpath(*path.parts[index:])
             if candidate.exists():
                 return candidate

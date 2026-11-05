@@ -139,7 +139,7 @@ torch = { index = "pytorch-cpu" }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["musclemimic*", "loco_mujoco*", "bimanual*", "fullbody*", "hum_exo*", "knee_exo*"]
+include = ["musclemimic*", "loco_mujoco*", "bimanual*", "fullbody*", "hum_exo*", "scripts*"]
 
 [tool.setuptools.package-data]
 "loco_mujoco.smpl" = ["robot_confs/*.yaml"]

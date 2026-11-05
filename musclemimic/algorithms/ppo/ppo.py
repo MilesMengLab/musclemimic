@@ -65,9 +65,12 @@ class PPOJax(JaxRLAlgorithmBase):
 
         # compute derived config values
         with open_dict(exp):
-            exp.num_updates = exp.total_timesteps // exp.num_steps // exp.num_envs
+            # Finish a complete rollout even when the requested budget is not
+            # divisible by the number of transitions collected per update.
+            rollout_size = exp.num_steps * exp.num_envs
+            exp.num_updates = (exp.total_timesteps + rollout_size - 1) // rollout_size
             exp.minibatch_size = exp.num_envs * exp.num_steps // exp.num_minibatches
-            exp.validation_interval = exp.num_updates // exp.validation.num
+            exp.validation_interval = max(1, exp.num_updates // exp.validation.num)
             exp.validation.num = int(exp.num_updates // exp.validation_interval)
 
         # utd override

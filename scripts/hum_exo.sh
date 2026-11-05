@@ -13,4 +13,9 @@ if [[ ! -x "$project_root/.venv/bin/python" ]]; then
     printf 'Create the environment first: uv sync --extra cuda\n' >&2
     exit 1
 fi
-exec "$project_root/.venv/bin/python" -m "hum_exo.$entry" "$@"
+if [[ "$entry" == "train" ]]; then
+    module="hum_exo.train"
+else
+    module="scripts.hum_exo.$entry"
+fi
+exec "$project_root/.venv/bin/python" -m "$module" "$@"

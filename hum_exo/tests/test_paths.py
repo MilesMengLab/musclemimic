@@ -20,8 +20,14 @@ def test_project_and_run_paths_do_not_depend_on_checkout_name(tmp_path, monkeypa
     target.touch()
     assert paths.resolve_path("project://assets/knee_exo/meshes/test.STL") == target
     assert paths.portable_path(target) == "project://assets/knee_exo/meshes/test.STL"
-    assert paths.resolve_path("/unavailable/old_repo/knee_exo/assets/meshes/test.STL") == target
-    assert paths.resolve_path("run://human_exo.xml", root / "runs/one") == root / "runs/one/human_exo.xml"
+    assert paths.resolve_path("/unavailable/old_repo/assets/knee_exo/meshes/test.STL") == target
+    assert paths.resolve_path("run://human_exo.xml", root / "outputs/one") == root / "outputs/one/human_exo.xml"
+    checkpoint = root / "outputs/2026-11-05/12-00-00/checkpoints/run-id/checkpoint_229"
+    checkpoint.mkdir(parents=True)
+    assert (
+        paths.resolve_path("/unavailable/old_repo/outputs/2026-11-05/12-00-00/checkpoints/run-id/checkpoint_229")
+        == checkpoint
+    )
 
 
 def test_relative_model_assets_survive_copy_and_root_rename(tmp_path, monkeypatch):
@@ -33,14 +39,14 @@ def test_relative_model_assets_survive_copy_and_root_rename(tmp_path, monkeypatc
         f'<mujoco><asset><mesh name="tetra" file="{mesh}"/></asset><worldbody><body><freejoint/><geom type="mesh" mesh="tetra"/></body></worldbody></mujoco>'
     )
     monkeypatch.setattr(paths, "project_root", lambda: root)
-    original = paths.write_portable_xml(xml, root / "runs/first/model.xml")
-    copied = paths.copy_model(original, root / "runs/second/model.xml")
+    original = paths.write_portable_xml(xml, root / "outputs/first/model.xml")
+    copied = paths.copy_model(original, root / "outputs/second/model.xml")
     assert not Path(ET.parse(copied).find("asset/mesh").get("file")).is_absolute()
     before = mujoco.MjModel.from_xml_path(str(copied))
     renamed = tmp_path / "Another Arbitrary Name"
     shutil.move(root, renamed)
     monkeypatch.setattr(paths, "project_root", lambda: renamed)
-    after = mujoco.MjModel.from_xml_path(str(renamed / "runs/second/model.xml"))
+    after = mujoco.MjModel.from_xml_path(str(renamed / "outputs/second/model.xml"))
     np.testing.assert_array_equal(before.mesh_vert, after.mesh_vert)
 
 
@@ -49,7 +55,7 @@ def test_historical_xml_relocates_assets_without_modifying_snapshot(tmp_path, mo
     texture = root / "assets/demo/picture.png"
     texture.parent.mkdir(parents=True)
     texture.touch()
-    saved = root / "runs/old/model.xml"
+    saved = root / "outputs/old/model.xml"
     saved.parent.mkdir(parents=True)
     contents = '<mujoco><asset><texture name="t" type="2d" file="/old/missing_project/assets/demo/picture.png"/></asset><worldbody/></mujoco>'
     saved.write_text(contents)

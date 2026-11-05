@@ -384,13 +384,18 @@ def run_training(train_fn, rngs):
     return train_fn(rngs)
 
 
-def _generate_run_suffix() -> str:
+def generate_run_suffix() -> str:
     """Return a per-run unique suffix for checkpoint directories."""
     ts = datetime.now(UTC).strftime("%y%m%dT%H%M%S")
     pid = os.getpid()
     job_num = os.environ.get("HYDRA_JOB_NUM")
     job_part = f"-job{job_num}" if job_num is not None else ""
     return f"{ts}-pid{pid}{job_part}-{uuid.uuid4().hex[:6]}"
+
+
+def _generate_run_suffix() -> str:
+    """Preserve the existing internal checkpoint naming entry point."""
+    return generate_run_suffix()
 
 
 def run_experiment(config, hooks: ExperimentHooks):

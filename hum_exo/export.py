@@ -1,6 +1,5 @@
 """Export device actor weights and the sensor contract from a joint checkpoint."""
 
-import argparse
 import json
 from pathlib import Path
 
@@ -67,15 +66,3 @@ def export(checkpoint: str, output: Path | None = None) -> Path:
     }
     (output / "input_schema.json").write_text(json.dumps(report, indent=2) + "\n")
     return target
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("checkpoint")
-    parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
-    print(export(args.checkpoint, args.output))
-
-
-if __name__ == "__main__":
-    main()

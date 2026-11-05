@@ -19,9 +19,9 @@ import numpy as np
 import viser
 
 from hum_exo.device import load_device
-from hum_exo.file_picker import DirectoryPicker
 from hum_exo.geometry import mesh_geometry, rendered_tendon_capsules
 from hum_exo.paths import project_name, resolve_path
+from scripts.hum_exo.file_picker import DirectoryPicker
 
 UI_HZ = 20
 POINT_COLORS = ((255, 210, 30), (55, 220, 180), (70, 160, 255), (225, 100, 245))
@@ -83,13 +83,14 @@ class FittingApp:
             cell_color=(185, 196, 209),
             section_color=(126, 145, 168),
         )
+        device_bodies = self.adapter.visual_body_ids(model)
         for geom in range(model.ngeom):
             if model.geom_type[geom] != mujoco.mjtGeom.mjGEOM_MESH or model.geom_group[geom] != 0:
                 continue
             body = int(model.geom_bodyid[geom])
             vertices, faces = mesh_geometry(model, data, geom)
             local = (vertices - data.xpos[body]) @ data.xmat[body].reshape(3, 3)
-            is_device = model.body(body).name.startswith("hinge_")
+            is_device = body in device_bodies
             rgba = model.geom_rgba[geom]
             color = tuple(int(v * 255) for v in rgba[:3]) if is_device else (220, 225, 230)
             handle = self.server.scene.add_mesh_simple(

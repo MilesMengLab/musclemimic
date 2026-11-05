@@ -279,4 +279,4 @@ control_config:
     control_params: {}
 hydra:
   run:
-    dir: ${project_root:}/runs/${device}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${project_root:}/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}

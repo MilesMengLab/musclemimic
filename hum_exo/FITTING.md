@@ -38,4 +38,4 @@ generated/knee_exo/fitting/draft_20261104-234500-123456_model.json
 
 这是中立位静态几何调节工具。红色几何表示肌肉路径显示，不是有厚度的皮肤模型；测点间隙不表示绑缚压力。完整检查不证明运动过程中无干涉，也不替代动态绑缚负载和步态评估。
 
-公共界面位于 `hum_exo/fit.py`，会话接口位于 `hum_exo/fitting.py`。膝关节运动学、测点和保存逻辑位于 `hum_exo/devices/knee_exo/fitting.py`，模型构建通过安装配置接入。其他设备可实现适配器的 `create_fitting_session()` 使用同一界面。
+公共界面位于 `scripts/hum_exo/fit.py`，会话接口位于 `hum_exo/fitting.py`。膝关节运动学、测点和保存逻辑位于 `hum_exo/devices/knee_exo/fitting.py`，模型构建通过安装配置接入。其他设备可实现适配器的 `create_fitting_session()` 使用同一界面。

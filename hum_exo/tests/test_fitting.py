@@ -13,7 +13,7 @@ import pytest
 from hum_exo.device import load_device
 from hum_exo.devices.knee_exo.fitting import KneeFittingSession, point_capsule_gaps
 from hum_exo.devices.knee_exo.model import build_model
-from hum_exo.preview import alignment
+from hum_exo.visualization import alignment
 
 
 @pytest.fixture(scope="module")

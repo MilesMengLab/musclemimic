@@ -24,6 +24,7 @@ class DeviceSpec:
     joints: tuple[str, ...]
     sensors: tuple[dict, ...]
     human_model: str = "MyoFullBody"
+    visual_body_roots: tuple[str, ...] = ()
 
     @property
     def input_names(self) -> tuple[str, ...]:
@@ -60,6 +61,21 @@ class DeviceAdapter(ABC):
         """Return additional device-specific evaluation quantities in SI units."""
         return {}
 
+    def visual_body_ids(self, model: Any) -> frozenset[int]:
+        """Select device subtrees for editing without relying on CAD name prefixes."""
+        roots = {model.body(name).id for name in self.spec.visual_body_roots}
+        if not roots:
+            roots = {int(model.jnt_bodyid[model.joint(name).id]) for name in self.spec.joints}
+        bodies = set(roots)
+        for body in range(1, model.nbody):
+            ancestor = body
+            while ancestor:
+                if ancestor in roots:
+                    bodies.add(body)
+                    break
+                ancestor = int(model.body_parentid[ancestor])
+        return frozenset(bodies)
+
     def create_fitting_session(self) -> Any:
         """Return this device's installation editor backend, when supported."""
         raise NotImplementedError(f"Device {self.spec.id} does not provide interactive fitting")
@@ -82,6 +98,7 @@ def load_device(device_id: str = "knee_exo") -> DeviceAdapter:
         joints=tuple(document["joints"]),
         sensors=tuple(document["sensors"]),
         human_model=document.get("human_model", "MyoFullBody"),
+        visual_body_roots=tuple(document.get("visual_body_roots", ())),
     )
     if not spec.actuators or len(set(spec.actuators)) != len(spec.actuators):
         raise ValueError("Device actuator names must be nonempty and unique")

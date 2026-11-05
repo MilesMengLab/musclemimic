@@ -10,9 +10,16 @@ from pathlib import Path
 from typing import Any
 
 from rich.console import Console
-from rich.progress import BarColumn, Progress, TimeElapsedColumn, TimeRemainingColumn
+from rich.progress import BarColumn, Progress, ProgressColumn, Task, TimeElapsedColumn, TimeRemainingColumn
 from rich.text import Text
 from tqdm.rich import FractionColumn, RateColumn
+
+
+class BudgetPercentageColumn(ProgressColumn):
+    """Reserve 100% for a completed budget rather than rounding up at 99.5%."""
+
+    def render(self, task: Task) -> Text:
+        return Text(f"{min(100, int(task.percentage)):>4d}%", style="progress.percentage")
 
 
 def format_table(groups: dict[str, dict[str, Any]]) -> str:
@@ -40,7 +47,7 @@ class TrainingConsole:
         self.logger = logging.getLogger("hum_exo.training")
         self.terminal = console if console is not None else Console(file=sys.stdout)
         self.progress = Progress(
-            "[progress.description]{task.description}[progress.percentage]{task.percentage:>4.0f}%",
+            BudgetPercentageColumn(),
             BarColumn(bar_width=None),
             FractionColumn(),
             "[",

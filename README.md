@@ -1,6 +1,22 @@
-## 本地人机协同扩展
+## 人体与外骨骼协同训练
 
-公共框架为 [hum_exo](hum_exo/README.md)，设备资产按 `assets/<device_id>/` 组织，当前为 [knee_exo](assets/knee_exo/README.md)。在当前仓库根目录执行 `./scripts/hum_exo.sh preview --device knee_exo` 预览，或 `./scripts/hum_exo.sh train device=knee_exo` 训练。启动脚本和资源解析根据实际根目录定位，支持修改外层文件夹名称。设备接入接口见 [DEVICE_API.md](hum_exo/DEVICE_API.md)。
+本仓库在 MuscleMimic 上增加可更换设备的人机协同训练。目前提供双侧膝关节外骨骼，人体与设备分别控制、联合优化。
+
+- [运行命令与 VS Code 配置](readme1.md)：训练、Play、预览、安装调节和导出。
+- [hum_exo 公共框架](hum_exo/README.md)：环境、策略、奖励、评估和设备接口。
+- [设备接入契约](hum_exo/DEVICE_API.md)：新增髋、踝等外骨骼的接入步骤。
+- [膝关节资产](assets/knee_exo/README.md)：URDF、网格、传感器与当前安装。
+- [脚本工具](scripts/hum_exo/README.md)：通用命令行与网页界面。
+
+```bash
+uv sync --extra cuda
+./scripts/hum_exo.sh train device=knee_exo experiment.env_params.num_envs=128 --headless
+./scripts/hum_exo.sh play --seconds 120
+```
+
+训练结果保存在 `outputs/日期/时间/`。Play 不填路径时加载同设备的最新完整模型。路径以当前仓库位置解析，可修改外层文件夹名。模型、数据、环境和本地代理配置由 Git 忽略，推送代码不会上传这些文件。
+
+以下保留 MuscleMimic 的上游项目说明与来源。
 
 <p align="center">
   <img src="./assets/banner.jpg" alt="Banner" width="100%">

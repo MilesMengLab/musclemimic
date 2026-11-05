@@ -11,6 +11,7 @@
   "schema_version": 1,
   "adapter": "hum_exo.devices.ankle_exo.adapter:AnkleExoAdapter",
   "human_model": "MyoFullBody",
+  "visual_body_roots": ["ankle_frame_r", "ankle_frame_l"],
   "actuators": ["ankle_motor_r", "ankle_motor_l"],
   "joints": ["ankle_device_r", "ankle_device_l"],
   "sensors": [
@@ -19,6 +20,8 @@
   ]
 }
 ```
+
+`visual_body_roots` 可选，声明设备刚体子树的根名称，网页据此着色和选取设备，不要求膝关节专属命名。省略时按设备关节的子树识别；含固定支架时应显式填写。
 
 `actuators` 决定设备输出顺序。`joints` 声明设备自由度，框架将其排除在人体模仿目标之外。`sensors` 按清单顺序读取 MuJoCo `sensordata`，每个条目的通道数必须匹配实际传感器维度。人体 actor 使用其余仿真及目标观测，设备 actor 只使用设备组，共同 critic 使用完整观测。
 
@@ -49,7 +52,7 @@ class AnkleExoAdapter(DeviceAdapter):
 
 `build_model` 和 `extend_reference` 必须实现，后两项可选。设备目录由 manifest 中的完整模块路径自动导入，无需编辑公共 registry。`self.spec.input_names`、`input_units`、`actuators` 和 `joints` 是运行时契约。模型必须保留人体需要的观测和参考站点，全部设备执行器均需在清单中声明。
 
-需要交互式安装调节时，可实现可选的 `create_fitting_session()`，返回符合 `hum_exo.fitting.FittingSession` 的会话。会话负责设备关节运动学、测点距离、贴合求解、干涉检查及安装配置保存。公共 `hum_exo.fit` 界面读取会话声明的参数、侧别和测点；未实现该接口的设备仍可训练和播放。详见 [FITTING.md](FITTING.md)。
+需要交互式安装调节时，可实现可选的 `create_fitting_session()`，返回符合 `hum_exo.fitting.FittingSession` 的会话。会话负责设备关节运动学、测点距离、贴合求解、干涉检查及安装配置保存。公共 `scripts.hum_exo.fit` 界面读取会话声明的参数、侧别和测点；未实现该接口的设备仍可训练和播放。详见 [FITTING.md](FITTING.md)。
 
 当前播放和导出支持标量转动或移动关节上的理想电机，归一化动作范围为 [-1,1]。设备必须在模型中定义正确的 gear、限幅和 SI 单位。复杂传动、气动或电机动态需要在设备模型和设备测量接口中明确实现，不应复用默认力矩解释。
 
@@ -63,3 +66,14 @@ class AnkleExoAdapter(DeviceAdapter):
 ```
 
 这些命令需要先实现相应 CAD 和适配器。测试中的单电机及三电机设备用于验证公共框架的维度与加载接口，不代表已经提供了踝关节物理资产。
+
+## 新设备接入清单
+
+1. 创建 `assets/hip_exo/` 或 `assets/ankle_exo/`，加入 URDF、网格、安装参数和 `device.json`。
+2. 在 `hum_exo/devices/<device_id>/` 实现 `DeviceAdapter`。保留人体站点和观测，声明全部设备关节、电机及真实可用的传感器。
+3. 实现 `build_model()` 与 `extend_reference()`。校准坐标系、零位、轴向、质量惯量、电机方向和限幅。
+4. 需要安装编辑时实现 `create_fitting_session()`；测点、调节自由度和约束留在设备实现。`preview_axes()` 与 `metrics()` 提供轴线及专用评价量。
+5. 用 `preview --device <device_id>` 检查安装，再执行小规模 GPU 训练、保存加载和电机关闭对照评估。
+6. 正式训练使用 `train device=<device_id>`，播放自动选择该设备时添加 `play --device <device_id>`。奖励、参考动作和 PPO 参数通过现有配置覆盖。
+
+通用默认值仍选择 `knee_exo`。髋和踝资产尚需实现；无需复制训练器、策略、终端日志、Play 或网页工具。训练输出与设备资产分开保存。

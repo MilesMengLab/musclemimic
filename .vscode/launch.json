@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "训练 | 膝关节 | GPU | 128 环境 | 渲染",
+            "name": "train_knee_exo_hinge_128_render",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
@@ -19,7 +19,7 @@
             ]
         },
         {
-            "name": "训练 | 膝关节 | GPU | 128 环境 | 无窗口",
+            "name": "train_knee_exo_hinge_128_headless",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
@@ -37,11 +37,11 @@
             ]
         },
         {
-            "name": "推理 | 膝关节 | 播放 120 秒",
+            "name": "play_knee_exo_hinge_1_render",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "module": "hum_exo.play",
+            "module": "scripts.hum_exo.play",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -54,11 +54,11 @@
             ]
         },
         {
-            "name": "推理 | 膝关节 | 无窗口评估 120 秒",
+            "name": "play_knee_exo_hinge_1_headless",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "module": "hum_exo.play",
+            "module": "scripts.hum_exo.play",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -72,11 +72,11 @@
             ]
         },
         {
-            "name": "预览 | 膝关节 | 安装与轴线",
+            "name": "preview_knee_exo_hinge_1_render",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "module": "hum_exo.preview",
+            "module": "scripts.hum_exo.preview",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -85,11 +85,11 @@
             "args": ["--device", "knee_exo"]
         },
         {
-            "name": "调节 | 膝关节 | 安装配合网页",
+            "name": "fit_knee_exo_hinge_1_web",
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/.venv/bin/python",
-            "module": "hum_exo.fit",
+            "module": "scripts.hum_exo.fit",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -102,7 +102,8 @@
         {
             "id": "checkpoint",
             "type": "promptString",
-            "description": "输入完整 checkpoint_编号 目录路径，支持相对项目根目录的路径或绝对路径"
+            "description": "留空或仅空格播放最新完整模型；也可输入 checkpoint_编号 目录的相对路径或绝对路径",
+            "default": ""
         }
     ]
 }

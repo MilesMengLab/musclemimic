@@ -685,15 +685,18 @@ class TestEnvUtils:
 
 
 class TestPPOInitAgentConf:
-    def test_sets_num_updates_in_struct_config(self):
+    @pytest.mark.parametrize(
+        "budget,num_envs,num_steps", [(1000, 10, 5), (1001, 10, 5), (49, 10, 5), (30_000_000, 2048, 64)]
+    )
+    def test_sets_num_updates_in_struct_config(self, budget, num_envs, num_steps):
         env = _DummyTrainEnv()
         config = OmegaConf.create(
             {
                 "experiment": {
-                    "total_timesteps": 1000,
-                    "num_envs": 10,
+                    "total_timesteps": budget,
+                    "num_envs": num_envs,
                     "ppo_config": {
-                        "num_steps": 5,
+                        "num_steps": num_steps,
                         "update_epochs": 2,
                         "num_minibatches": 2,
                         "gamma": 0.99,
@@ -726,6 +729,13 @@ class TestPPOInitAgentConf:
 
         PPOJax.init_agent_conf(env, config)
 
-        assert config.experiment.num_updates == 20
-        assert config.experiment.minibatch_size == 25
-        assert config.experiment.validation_interval == 5
+        batch = num_envs * num_steps
+        expected_updates = (budget + batch - 1) // batch
+        assert config.experiment.num_updates == expected_updates
+        assert expected_updates * batch >= budget
+        assert (expected_updates - 1) * batch < budget
+        assert config.experiment.minibatch_size == batch // 2
+        assert config.experiment.validation_interval == max(1, expected_updates // 4)
+        if budget == 30_000_000:
+            assert expected_updates == 229
+            assert expected_updates * batch == 30_015_488

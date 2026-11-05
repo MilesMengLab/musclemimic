@@ -58,3 +58,7 @@ scripts/test_bimanual_diverse*
 !/.vscode/
 /.vscode/*
 !/.vscode/launch.json
+
+# Local tooling caches and accidental nested checkouts.
+/.ruff_cache/
+/musclemimic/musclemimic/

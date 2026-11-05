@@ -12,6 +12,7 @@ import hydra
 import jax
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf, open_dict
+from rich.console import Console
 
 import hum_exo.reward
 from hum_exo.checkpoint import load_checkpoint
@@ -19,6 +20,7 @@ from hum_exo.configuration import register_resolvers
 from hum_exo.console import TrainingConsole
 from hum_exo.device import load_device
 from hum_exo.environment import register
+from hum_exo.logging import checkpoint_console_logging
 from hum_exo.paths import copy_model, portable_path, project_name, resolve_path
 from hum_exo.policy import HumanExoPPO
 from musclemimic.algorithms.common.checkpoint_hooks import create_jax_checkpoint_host_callback
@@ -45,6 +47,12 @@ def training_arguments(arguments: list[str]) -> list[str]:
 
 @hydra.main(version_base=None, config_path="configs", config_name="train")
 def main(config: DictConfig) -> None:
+    """Configure this job's console while keeping full Hydra file logging."""
+    with checkpoint_console_logging() as terminal:
+        run_training(config, terminal)
+
+
+def run_training(config: DictConfig, terminal: Console) -> None:
     """Construct the device task, persist configuration, then run joint PPO."""
     register()
     engine.setup_jax_cache()
@@ -94,10 +102,12 @@ def main(config: DictConfig) -> None:
     (output / "reference_fit.json").write_text(json.dumps(env.reference_fit_report, indent=2) + "\n")
     agent = HumanExoPPO.init_agent_conf(env, config)
     with open_dict(config.experiment):
-        config.experiment.checkpoint_dir = str(output / "checkpoints")
+        config.experiment.checkpoint_dir = str(output / "checkpoints" / engine.generate_run_suffix())
     snapshot = OmegaConf.create(OmegaConf.to_container(config, resolve=True))
     snapshot.experiment.env_params.device_model = "run://human_exo.xml"
-    snapshot.experiment.checkpoint_dir = "run://checkpoints"
+    snapshot.experiment.checkpoint_dir = (
+        "run://" + Path(config.experiment.checkpoint_dir).relative_to(output).as_posix()
+    )
     OmegaConf.save(snapshot, output / "session_config.yaml")
     shutil.copy2(device.spec.asset_root / "device.json", output / "device.json")
     report = {
@@ -115,7 +125,7 @@ def main(config: DictConfig) -> None:
         "model_package": "musclemimic_models",
     }
     (output / "interface.json").write_text(json.dumps(report, indent=2) + "\n")
-    console = TrainingConsole(config, output)
+    console = TrainingConsole(config, output, console=terminal)
     metrics = engine.build_metrics_handler(config, val_env)
     train_fn = resume_or_fresh(
         env,
@@ -151,6 +161,8 @@ def main(config: DictConfig) -> None:
             env.training_state_callback = training_view
         result = engine.run_training(train_fn, engine.compute_training_rngs(config))
         jax.block_until_ready(result)
+        # Wait for the final metrics callback before closing its progress bar.
+        jax.effects_barrier()
         console.close()
         print("learning done!", flush=True)
     finally:

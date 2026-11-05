@@ -139,7 +139,14 @@ def create_jax_checkpoint_host_callback(
         # Save checkpoint (use update_number as directory name)
         path = manager.save_checkpoint(md.update_number, agent_conf, agent_state, md)
         mode = "async" if hook_cfg.async_checkpointing else "sync"
-        logger.info(f"Saved checkpoint ({mode}) at update {md.update_number}: {path}")
+        logger.info(
+            f"Saved checkpoint ({mode}) at update {md.update_number}: {path}",
+            extra={
+                "checkpoint_event": "queued" if hook_cfg.async_checkpointing else "saved",
+                "checkpoint_path": str(path),
+                "checkpoint_timestep": md.global_timestep,
+            },
+        )
         logger.info(f"  Global timestep: {md.global_timestep:,}")
         return 0  # dummy return to satisfy io_callback contract
 
